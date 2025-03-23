@@ -20,6 +20,7 @@ use BitWasp\Bitcoin\Transaction\Factory\TxBuilder;
 use BitWasp\Bitcoin\Transaction\TransactionInput;
 use BitWasp\Bitcoin\Transaction\TransactionInterface;
 use BitWasp\Bitcoin\Transaction\TransactionOutput;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class CsvTest extends AbstractTestCase
 {
@@ -29,7 +30,7 @@ class CsvTest extends AbstractTestCase
      * @param int $version
      * @return TransactionInterface
      */
-    public function txFixture(int $locktime, int $sequence, int $version = 2)
+    public static function txFixture(int $locktime, int $sequence, int $version = 2)
     {
         $addrCreator = new AddressCreator();
         return (new TxBuilder())
@@ -38,13 +39,13 @@ class CsvTest extends AbstractTestCase
             ->output(90000000, $addrCreator->fromString("1BQLNJtMDKmMZ4PyqVFfRuBNvoGhjigBKF")->getScriptPubKey())
             ->locktime($locktime)
             ->get()
-            ;
+        ;
     }
 
     /**
      * @return array
      */
-    public function getCltvCases()
+    public static function getCltvCases()
     {
         $blocks100 = 100;
         $seconds512 = TransactionInput::SEQUENCE_LOCKTIME_TYPE_FLAG | 1;
@@ -56,25 +57,46 @@ class CsvTest extends AbstractTestCase
 
         return [
             [
-                $blocks100, $this->txFixture(0, $blocks100, 0), \RuntimeException::class, $errTxVersion,
+                $blocks100,
+                static::txFixture(0, $blocks100, 0),
+                \RuntimeException::class,
+                $errTxVersion,
             ],
             [
-                $blocks100, $this->txFixture(0, $blocks100, 1), \RuntimeException::class, $errTxVersion,
+                $blocks100,
+                static::txFixture(0, $blocks100, 1),
+                \RuntimeException::class,
+                $errTxVersion,
             ],
             [
-                $blocks100, $this->txFixture(0, $blocks100, 2), null, null,
+                $blocks100,
+                static::txFixture(0, $blocks100, 2),
+                null,
+                null,
             ],
             [
-                $seconds512, $this->txFixture(0, $seconds512, 2), null, null,
+                $seconds512,
+                static::txFixture(0, $seconds512, 2),
+                null,
+                null,
             ],
             [
-                $seconds512, $this->txFixture(0, $blocks100, 2), \RuntimeException::class, $errCsvNotSeconds,
+                $seconds512,
+                static::txFixture(0, $blocks100, 2),
+                \RuntimeException::class,
+                $errCsvNotSeconds,
             ],
             [
-                $blocks100, $this->txFixture(0, $seconds512, 2), \RuntimeException::class, $errCsvNotBlocks,
+                $blocks100,
+                static::txFixture(0, $seconds512, 2),
+                \RuntimeException::class,
+                $errCsvNotBlocks,
             ],
             [
-                $blocks100, $this->txFixture(0, 0xffffffff, 2), \RuntimeException::class, $errSequenceFinal,
+                $blocks100,
+                static::txFixture(0, 0xffffffff, 2),
+                \RuntimeException::class,
+                $errSequenceFinal,
             ],
         ];
     }
@@ -86,15 +108,19 @@ class CsvTest extends AbstractTestCase
      * @param null|string $exceptionMsg
      * @dataProvider getCltvCases
      */
-    public function testCsv(int $verifySequence, TransactionInterface $unsigned, string $exception = null, string $exceptionMsg = null)
+    #[DataProvider('getCltvCases')]
+    public function testCsv(int $verifySequence, TransactionInterface $unsigned, ?string $exception = null, ?string $exceptionMsg = null)
     {
         /** @var PrivateKeyInterface[] $keys */
         $factory = new PrivateKeyFactory();
         $key = $factory->fromHexCompressed("4200000042000000420000004200000042000000420000004200000042000000");
 
         $s = ScriptFactory::sequence([
-            Number::int($verifySequence)->getBuffer(), Opcodes::OP_CHECKSEQUENCEVERIFY, Opcodes::OP_DROP,
-            $key->getPublicKey()->getBuffer(), Opcodes::OP_CHECKSIG,
+            Number::int($verifySequence)->getBuffer(),
+            Opcodes::OP_CHECKSEQUENCEVERIFY,
+            Opcodes::OP_DROP,
+            $key->getPublicKey()->getBuffer(),
+            Opcodes::OP_CHECKSIG,
         ]);
 
         $ws = new WitnessScript($s);
@@ -108,12 +134,10 @@ class CsvTest extends AbstractTestCase
         $signData = (new SignData())
             ->p2sh($rs)
             ->p2wsh($ws)
-            ->signaturePolicy($flags)
-        ;
+            ->signaturePolicy($flags);
 
         $signer = (new Signer($unsigned))
-            ->allowComplexScripts(true)
-        ;
+            ->allowComplexScripts(true);
 
         if (null !== $exception) {
             $this->expectException($exception);
@@ -122,8 +146,7 @@ class CsvTest extends AbstractTestCase
 
         $input = $signer
             ->input(0, $txOut, $signData)
-            ->signStep(1, $key)
-        ;
+            ->signStep(1, $key);
 
         if ($exception) {
             $this->fail("expected failure before verification can commence");

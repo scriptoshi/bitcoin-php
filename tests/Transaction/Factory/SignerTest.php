@@ -43,6 +43,7 @@ use BitWasp\Bitcoin\Transaction\TransactionOutput;
 use BitWasp\Bitcoin\Transaction\TransactionOutputInterface;
 use BitWasp\Bitcoin\Utxo\Utxo;
 use BitWasp\Buffertools\Buffer;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class SignerTest extends AbstractTestCase
 {
@@ -52,17 +53,17 @@ class SignerTest extends AbstractTestCase
      * @param EcAdapterInterface $ecAdapter
      * @return array
      */
-    public function getScriptVectors(EcAdapterInterface $ecAdapter)
+    public static function getScriptVectors(EcAdapterInterface $ecAdapter)
     {
         $privFactory = new PrivateKeyFactory($ecAdapter);
         $results = [];
-        foreach ($this->jsonDataFile('signer_fixtures.json')['valid'] as $fixture) {
+        foreach (static::jsonDataFile('signer_fixtures.json')['valid'] as $fixture) {
             $inputs = $fixture['raw']['ins'];
             $outputs = $fixture['raw']['outs'];
             $locktime = isset($fixture['raw']['locktime']) ? $fixture['raw']['locktime'] : 0;
             $policy = Interpreter::VERIFY_NONE | Interpreter::VERIFY_P2SH | Interpreter::VERIFY_WITNESS | Interpreter::VERIFY_CHECKLOCKTIMEVERIFY | Interpreter::VERIFY_CHECKSEQUENCEVERIFY;
             if (isset($fixture['signaturePolicy'])) {
-                $policy = $this->getScriptFlagsFromString($fixture['signaturePolicy']);
+                $policy = static::getScriptFlagsFromString($fixture['signaturePolicy']);
             }
 
             $utxos = [];
@@ -89,7 +90,7 @@ class SignerTest extends AbstractTestCase
                 if (array_key_exists('witnessScript', $input) && "" !== $input['witnessScript']) {
                     $signData->p2wsh(ScriptFactory::fromHex($input['witnessScript']));
                 }
-                $inputPolicy = isset($input['signaturePolicy']) ? $this->getScriptFlagsFromString($input['signaturePolicy']) : $policy;
+                $inputPolicy = isset($input['signaturePolicy']) ? static::getScriptFlagsFromString($input['signaturePolicy']) : $policy;
                 $signData->signaturePolicy($inputPolicy);
                 $signDatas[] = $signData;
             }
@@ -118,11 +119,11 @@ class SignerTest extends AbstractTestCase
      * Produces ALL vectors
      * @return array
      */
-    public function getVectors()
+    public static function getVectors()
     {
         $results = [];
-        foreach ($this->getEcAdapters() as $ecAdapter) {
-            $results = array_merge($results, $this->getScriptVectors($ecAdapter[0]));
+        foreach (static::getEcAdapters() as $ecAdapter) {
+            $results = array_merge($results, static::getScriptVectors($ecAdapter[0]));
         }
         return $results;
     }
@@ -148,6 +149,7 @@ class SignerTest extends AbstractTestCase
      * @param array $optExtra
      * @dataProvider getVectors
      */
+    #[DataProvider('getVectors')]
     public function testCases($description, EcAdapterInterface $ecAdapter, TxBuilder $builder, array $utxos, array $signDatas, array $keys, array $optExtra)
     {
         $signer = new Signer($builder->get(), $ecAdapter);
@@ -191,7 +193,7 @@ class SignerTest extends AbstractTestCase
             }
 
             foreach ($signSteps as $keyAndHashType) {
-                list ($privateKey, $sigHashType) = $keyAndHashType;
+                list($privateKey, $sigHashType) = $keyAndHashType;
                 $signer->sign($i, $privateKey, $utxo->getOutput(), $signData, $sigHashType);
             }
 
@@ -225,7 +227,7 @@ class SignerTest extends AbstractTestCase
             $osig = $origSigner->getSignatures();
             $ikey = $inSigner->getPublicKeys();
             $isig = $inSigner->getSignatures();
-            
+
             $this->assertEquals(count($okey), count($ikey), 'should recover same # public keys');
             $this->assertEquals(count($osig), count($isig), 'should recover same # signatures');
 
@@ -261,7 +263,7 @@ class SignerTest extends AbstractTestCase
      * @return array
      * @throws \Exception
      */
-    public function getSimpleSpendCases(EcAdapterInterface $ecAdapter)
+    public static function getSimpleSpendCases(EcAdapterInterface $ecAdapter)
     {
         $pubKeyFactory = new PublicKeyFactory($ecAdapter);
         $publicKey = $pubKeyFactory->fromHex('038de63cf582d058a399a176825c045672d5ff8ea25b64d28d4375dcdb14c02b2b');
@@ -278,12 +280,12 @@ class SignerTest extends AbstractTestCase
     /**
      * @return array
      */
-    public function getSimpleSpendVectors(): array
+    public static function getSimpleSpendVectors(): array
     {
         $vectors = [];
-        foreach ($this->getEcAdapters() as $adapterFixture) {
+        foreach (static::getEcAdapters() as $adapterFixture) {
             $ecAdapter = $adapterFixture[0];
-            foreach ($this->getSimpleSpendCases($ecAdapter) as $script) {
+            foreach (static::getSimpleSpendCases($ecAdapter) as $script) {
                 $vectors[] = [$ecAdapter, $script];
             }
         }
@@ -296,6 +298,7 @@ class SignerTest extends AbstractTestCase
      * @param ScriptInterface $script
      * @dataProvider getSimpleSpendVectors
      */
+    #[DataProvider('getSimpleSpendVectors')]
     public function testRejectsWrongKey(EcAdapterInterface $ecAdapter, ScriptInterface $script)
     {
         $outpoint = new OutPoint(new Buffer('', 32), 0xffffffff);
@@ -390,7 +393,7 @@ class SignerTest extends AbstractTestCase
         try {
             $this->doTestSignerInvalidKeyInteraction(true);
         } catch (\Exception $e) {
-            echo $e->getMessage().PHP_EOL;
+            echo $e->getMessage() . PHP_EOL;
             $caught = true;
         }
         $this->assertFalse($caught, "No exception expected when tolerate=true");
@@ -452,7 +455,7 @@ class SignerTest extends AbstractTestCase
         $this->assertEquals($expectSpend, $tx->getHex());
     }
 
-    public function paddedMultisigsProvider()
+    public static function paddedMultisigsProvider()
     {
         $privFactory = new PrivateKeyFactory();
         $keys = [
@@ -526,11 +529,11 @@ class SignerTest extends AbstractTestCase
      * @param SignData $signData
      * @dataProvider paddedMultisigsProvider
      */
+    #[DataProvider('paddedMultisigsProvider')]
     public function testPaddingMultisig(array $privKeys, TransactionInterface $tx, TransactionOutputInterface $txOut, SignData $signData)
     {
         $signer = (new Signer($tx))
-            ->padUnsignedMultisigs(true)
-        ;
+            ->padUnsignedMultisigs(true);
 
         $input = $signer->input(0, $txOut, $signData);
 
@@ -593,8 +596,7 @@ class SignerTest extends AbstractTestCase
             ->p2sh($p2sh);
 
         $signer = (new Signer($unsigned))
-            ->padUnsignedMultisigs(true)
-        ;
+            ->padUnsignedMultisigs(true);
 
         $signer
             ->input(0, $txOut, $signData)
@@ -609,7 +611,7 @@ class SignerTest extends AbstractTestCase
         $op_0 = new Operation(Opcodes::OP_0, new Buffer());
 
         for ($i = 0; $i < count($chunks); ++$i) {
-            $copy =[];
+            $copy = [];
             foreach ($chunks as $j => $c) {
                 if ($i == $j) {
                     $copy[] = $op_0;
@@ -624,8 +626,7 @@ class SignerTest extends AbstractTestCase
             $exception = null;
             try {
                 $signerAgain = (new Signer($txInvalid))
-                    ->padUnsignedMultisigs(true)
-                ;
+                    ->padUnsignedMultisigs(true);
 
                 $signerAgain->input(0, $txOut, $signData);
             } catch (\Exception $e) {
@@ -665,8 +666,7 @@ class SignerTest extends AbstractTestCase
             ->p2wsh($p2wsh);
 
         $signer = (new Signer($unsigned))
-            ->padUnsignedMultisigs(true)
-        ;
+            ->padUnsignedMultisigs(true);
 
         $signer
             ->input(0, $txOut, $signData)
@@ -680,7 +680,7 @@ class SignerTest extends AbstractTestCase
         $op_0 = new Buffer();
 
         for ($i = 0; $i < count($chunks); ++$i) {
-            $copy =[];
+            $copy = [];
             foreach ($chunks as $j => $c) {
                 if ($i == $j) {
                     $copy[] = $op_0;
@@ -697,8 +697,7 @@ class SignerTest extends AbstractTestCase
             $exception = null;
             try {
                 $signerAgain = (new Signer($txInvalid))
-                    ->padUnsignedMultisigs(true)
-                ;
+                    ->padUnsignedMultisigs(true);
 
                 $signerAgain->input(0, $txOut, $signData);
             } catch (\Exception $e) {

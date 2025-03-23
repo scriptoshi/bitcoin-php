@@ -5,10 +5,11 @@ namespace BitWasp\Bitcoin\Tests\Bech32\Unit\Bech32;
 use BitWasp\Bitcoin\Exceptions\Bech32Exception;
 use BitWasp\Bitcoin\Tests\Bech32\TestCase;
 use BitWasp\Bitcoin\Bech32;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class DecodeTest extends TestCase
 {
-    public function failedDecodeFixtures()
+    public static function failedDecodeFixtures()
     {
         return [
             ["\x201xj0phk", "Out of range character in bech32 string"],
@@ -34,6 +35,7 @@ class DecodeTest extends TestCase
      * @param string $exceptionMsg
      * @dataProvider failedDecodeFixtures
      */
+    #[DataProvider('failedDecodeFixtures')]
     public function testDecodeFails($bech32, $exceptionMsg)
     {
         $this->expectException(Bech32Exception::class);
@@ -44,7 +46,7 @@ class DecodeTest extends TestCase
     /**
      * @return array
      */
-    public function validChecksumProvider()
+    public static function validChecksumProvider()
     {
         return [
             ["A1LQFN3A"],
@@ -62,12 +64,13 @@ class DecodeTest extends TestCase
      * @param string $hasValidChecksum
      * @dataProvider validChecksumProvider
      */
+    #[DataProvider('validChecksumProvider')]
     public function testValidChecksum($hasValidChecksum)
     {
         Bech32::decode($hasValidChecksum);
 
         $pos = strrpos($hasValidChecksum, "1");
-        $invalidChecksum = substr($hasValidChecksum, 0, $pos+1) . chr(ord($hasValidChecksum[$pos+1])^1) . substr($hasValidChecksum, $pos+2);
+        $invalidChecksum = substr($hasValidChecksum, 0, $pos + 1) . chr(ord($hasValidChecksum[$pos + 1]) ^ 1) . substr($hasValidChecksum, $pos + 2);
 
         $this->expectException(Bech32Exception::class);
         Bech32::decode($invalidChecksum);
@@ -76,17 +79,17 @@ class DecodeTest extends TestCase
     /**
      * @return array
      */
-    public function invalidChecksumProvider()
+    public static function invalidChecksumProvider()
     {
         return [
             [" 1nwldj5"],
-            ["\x7f"."1axkwrx"],
+            ["\x7f" . "1axkwrx"],
             ["an84characterslonghumanreadablepartthatcontainsthenumber1andtheexcludedcharactersbio1569pvx"],
             ["pzry9x0s0muk"],
             ["1pzry9x0s0muk"],
             ["x1b4n0q5v"],
             ["li1dgmt3"],
-            ["de1lg7wt"."\xff"],
+            ["de1lg7wt" . "\xff"],
             ["bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t5"]
         ];
     }
@@ -96,6 +99,7 @@ class DecodeTest extends TestCase
      * @param string $hasValidChecksum
      * @dataProvider invalidChecksumProvider
      */
+    #[DataProvider('invalidChecksumProvider')]
     public function testInvalidChecksum($hasValidChecksum)
     {
         $this->expectException(Bech32Exception::class);

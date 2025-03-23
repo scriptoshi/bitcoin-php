@@ -17,6 +17,7 @@ use BitWasp\Bitcoin\Tests\AbstractTestCase;
 use BitWasp\Buffertools\Buffer;
 use BitWasp\Buffertools\BufferInterface;
 use BitWasp\Buffertools\Buffertools;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class OutputClassifierTest extends AbstractTestCase
 {
@@ -27,10 +28,10 @@ class OutputClassifierTest extends AbstractTestCase
         $this->assertEquals(ScriptType::NONSTANDARD, $classifier->classify($script));
     }
 
-    public function getVectors()
+    public static function getVectors()
     {
         $classifier = new OutputClassifier();
-        $data = json_decode($this->dataFile('outputclassifier.json'), true);
+        $data = json_decode(static::dataFile('outputclassifier.json'), true);
 
         $vectors = [];
         foreach ($data as $vector) {
@@ -136,7 +137,7 @@ class OutputClassifierTest extends AbstractTestCase
 
         $this->assertTrue($classifier->isPayToScriptHash(ScriptFactory::sequence([Opcodes::OP_HASH160, $hash, Opcodes::OP_EQUAL])));
     }
-    
+
     /**
      * @dataProvider getVectors
      * @param OutputClassifier $classifier
@@ -144,6 +145,7 @@ class OutputClassifierTest extends AbstractTestCase
      * @param BufferInterface|BufferInterface[] $eSolution
      * @param string $classification
      */
+    #[DataProvider('getVectors')]
     public function testCases(OutputClassifier $classifier, ScriptInterface $script, $eSolution, string $classification)
     {
         $pubKeyFactory = new PublicKeyFactory();

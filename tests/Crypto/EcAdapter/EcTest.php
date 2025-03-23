@@ -11,6 +11,7 @@ use BitWasp\Bitcoin\Math\Math;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
 use BitWasp\Buffertools\Buffer;
 use Mdanter\Ecc\EccFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class EcTest extends AbstractTestCase
 {
@@ -66,6 +67,7 @@ class EcTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ec
      */
+    #[DataProvider('getEcAdapters')]
     public function testAdd(EcAdapterInterface $ec)
     {
         $private = $this->getFirstPrivateKey($ec);
@@ -96,6 +98,7 @@ class EcTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ec
      */
+    #[DataProvider('getEcAdapters')]
     public function testMul(EcAdapterInterface $ec)
     {
         $private = $this->getFirstPrivateKey($ec);
@@ -121,6 +124,7 @@ class EcTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ec
      */
+    #[DataProvider('getEcAdapters')]
     public function testSign(EcAdapterInterface $ec)
     {
         $private = $this->getFirstPrivateKey($ec);
@@ -134,6 +138,7 @@ class EcTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ec
      */
+    #[DataProvider('getEcAdapters')]
     public function testSignCompact(EcAdapterInterface $ec)
     {
         $private = $this->getFirstPrivateKey($ec);
@@ -149,6 +154,7 @@ class EcTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ec
      */
+    #[DataProvider('getEcAdapters')]
     public function testValidatePrivateKey(EcAdapterInterface $ec)
     {
         $valid = [

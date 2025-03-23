@@ -6,13 +6,14 @@ use BitWasp\Bitcoin\Tests\Bech32\Provider\ValidAddresses;
 use BitWasp\Bitcoin\Tests\Bech32\TestCase;
 use BitWasp\Bitcoin\Tests\Bech32\Util;
 use BitWasp\Bitcoin\Bech32;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class EncodeTest extends TestCase
 {
     /**
      * @return array
      */
-    public function validAddressProvider()
+    public static function validAddressProvider()
     {
         return ValidAddresses::load();
     }
@@ -24,10 +25,11 @@ class EncodeTest extends TestCase
      * @param string $hexScript
      * @dataProvider validAddressProvider
      */
+    #[DataProvider('validAddressProvider')]
     public function testValidAddress($hrp, $bech32, $hexScript)
     {
         // Check we decode, and that HRP matches test fixture
-        list ($gotHRP, $data) = Bech32::decode($bech32);
+        list($gotHRP, $data) = Bech32::decode($bech32);
         $this->assertEquals($hrp, $gotHRP);
 
         $decoded = Bech32::convertBits(array_slice($data, 1), count($data) - 1, 5, 8, false);

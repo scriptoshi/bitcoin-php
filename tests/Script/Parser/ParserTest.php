@@ -9,6 +9,7 @@ use BitWasp\Bitcoin\Script\ScriptFactory;
 use BitWasp\Bitcoin\Script\ScriptInterface;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
 use BitWasp\Buffertools\Buffer;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ParserTest extends AbstractTestCase
 {
@@ -18,30 +19,30 @@ class ParserTest extends AbstractTestCase
      */
     private $script;
 
-    public function getInvalidScripts()
+    public static function getInvalidScripts()
     {
         $start = array(
-            ['',255, null, false],
-            ['0200',2,null, false],
-            ['4c',76,null, false]
+            ['', 255, null, false],
+            ['0200', 2, null, false],
+            ['4c', 76, null, false]
         );
 
         $s = '';
         for ($j = 1; $j < 250; $j++) {
             $s .= '41';
         }
-        $start[] = ['4cff'.$s, 76, null, false];
+        $start[] = ['4cff' . $s, 76, null, false];
 
         return $start;
     }
 
-    public function getValidPushScripts()
+    public static function getValidPushScripts()
     {
         $s = '';
         for ($j = 1; $j < 256; $j++) {
             $s .= '41';
         }
-        $s1 = '4cff'.$s;
+        $s1 = '4cff' . $s;
 
         $t = '';
         for ($j = 1; $j < 260; $j++) {
@@ -57,9 +58,9 @@ class ParserTest extends AbstractTestCase
         return $start;
     }
 
-    public function getTestPushScripts()
+    public static function getTestPushScripts()
     {
-        return array_merge($this->getValidPushScripts(), $this->getInvalidScripts());
+        return array_merge(static::getValidPushScripts(), static::getInvalidScripts());
     }
 
     /**
@@ -69,6 +70,7 @@ class ParserTest extends AbstractTestCase
      * @param string $expectedPushData
      * @param bool $result
      */
+    #[DataProvider('getValidPushScripts')]
     public function testPush(string $script, int $expectedOp, $expectedPushData, bool $result)
     {
         $parser = ScriptFactory::fromHex($script)->getScriptParser();

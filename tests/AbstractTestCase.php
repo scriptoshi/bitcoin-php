@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace BitWasp\Bitcoin\Tests;
 
-use BitWasp\Bitcoin\Block\Block;
-use BitWasp\Bitcoin\Block\BlockFactory;
-use BitWasp\Bitcoin\Block\BlockInterface;
 use BitWasp\Bitcoin\Crypto\EcAdapter\EcAdapterFactory;
 use BitWasp\Bitcoin\Crypto\EcAdapter\Impl\PhpEcc\Adapter\EcAdapter as PhpEccAdapter;
 use BitWasp\Bitcoin\Math\Math;
@@ -20,24 +17,16 @@ abstract class AbstractTestCase extends TestCase
     /**
      * @var array
      */
-    private $scriptFlagNames;
+    private static $scriptFlagNames;
 
     /**
      * @var resource
      */
     private static $secp256k1Context;
 
-    /**
-     * @return resource
-     */
-    public static function getSecp256k1Context()
-    {
-        if (null === self::$secp256k1Context) {
-            self::$secp256k1Context = secp256k1_context_create(SECP256K1_CONTEXT_VERIFY | SECP256K1_CONTEXT_SIGN);
-        }
 
-        return self::$secp256k1Context;
-    }
+
+
 
     /**
      * @param callable|\Closure $closure
@@ -64,7 +53,7 @@ abstract class AbstractTestCase extends TestCase
      * @param string $file
      * @return string
      */
-    public function dataPath($file)
+    public static function dataPath($file)
     {
         return __DIR__ . '/Data/' . $file;
     }
@@ -73,9 +62,9 @@ abstract class AbstractTestCase extends TestCase
      * @param string $filename
      * @return string
      */
-    public function dataFile($filename)
+    public static function dataFile($filename)
     {
-        $contents = file_get_contents($this->dataPath($filename));
+        $contents = file_get_contents(static::dataPath($filename));
         if (false === $contents) {
             throw new \RuntimeException('Failed to data file ' . $filename);
         }
@@ -86,9 +75,9 @@ abstract class AbstractTestCase extends TestCase
      * @param string $name
      * @return array
      */
-    public function jsonDataFile($name)
+    public static function jsonDataFile($name)
     {
-        $contents = $this->dataFile($name);
+        $contents = static::dataFile($name);
         $decoded = json_decode($contents, true);
         if (false === $decoded || json_last_error() !== JSON_ERROR_NONE) {
             throw new \RuntimeException('Invalid JSON file ' . $name);
@@ -100,35 +89,7 @@ abstract class AbstractTestCase extends TestCase
     /**
      * @return array
      */
-    public function getBlocks()
-    {
-        $blocks = $this->dataFile('180blocks');
-        $a = explode("\n", $blocks);
-        return array_filter($a, 'strlen');
-    }
-
-    /**
-     * @param int $i
-     * @return BlockInterface
-     */
-    public function getBlock(int $i): BlockInterface
-    {
-        $blocks = $this->getBlocks();
-        return BlockFactory::fromHex($blocks[$i]);
-    }
-
-    /**
-     * @return Block
-     */
-    public function getGenesisBlock(): Block
-    {
-        return $this->getBlock(0);
-    }
-
-    /**
-     * @return array
-     */
-    public function getEcAdapters()
+    public static function getEcAdapters()
     {
         $math = new Math;
         $generator = EccFactory::getSecgCurves()->generator256k1();
@@ -150,7 +111,7 @@ abstract class AbstractTestCase extends TestCase
         $array = explode(",", $flagStr);
         $int = 0;
         foreach ($array as $activeFlag) {
-            $f = constant(InterpreterInterface::class."::$activeFlag");
+            $f = constant(InterpreterInterface::class . "::$activeFlag");
             $int |= $f;
         }
 
@@ -160,10 +121,10 @@ abstract class AbstractTestCase extends TestCase
     /**
      * @return array
      */
-    public function calcMapScriptFlags()
+    public static function calcMapScriptFlags()
     {
-        if (null === $this->scriptFlagNames) {
-            $this->scriptFlagNames = [
+        if (null === static::$scriptFlagNames) {
+            static::$scriptFlagNames = [
                 "NONE" => Interpreter::VERIFY_NONE,
                 "P2SH" => Interpreter::VERIFY_P2SH,
                 "STRICTENC" => Interpreter::VERIFY_STRICTENC,
@@ -183,16 +144,16 @@ abstract class AbstractTestCase extends TestCase
             ];
         }
 
-        return $this->scriptFlagNames;
+        return  static::$scriptFlagNames;
     }
 
     /**
      * @param string $string
      * @return int
      */
-    public function getScriptFlagsFromString($string)
+    public static function getScriptFlagsFromString($string)
     {
-        $mapFlagNames = $this->calcMapScriptFlags();
+        $mapFlagNames = static::calcMapScriptFlags();
         if (strlen($string) === 0) {
             return Interpreter::VERIFY_NONE;
         }
@@ -233,6 +194,6 @@ abstract class AbstractTestCase extends TestCase
     {
         $math = $this->safeMath();
         $generator = $this->safeGenerator();
-        return extension_loaded('secp256k1') ? EcAdapterFactory::getSecp256k1($math, $generator): new PhpEccAdapter($math, $generator);
+        return extension_loaded('secp256k1') ? EcAdapterFactory::getSecp256k1($math, $generator) : new PhpEccAdapter($math, $generator);
     }
 }

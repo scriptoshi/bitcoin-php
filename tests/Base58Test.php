@@ -8,13 +8,14 @@ use BitWasp\Bitcoin\Base58;
 use BitWasp\Bitcoin\Exceptions\Base58ChecksumFailure;
 use BitWasp\Bitcoin\Exceptions\Base58InvalidCharacter;
 use BitWasp\Buffertools\Buffer;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class Base58Test extends AbstractTestCase
 {
 
-    public function getVectors()
+    public static function getVectors()
     {
-        $json = json_decode($this->dataFile('base58.encodedecode.json'));
+        $json = json_decode(static::dataFile('base58.encodedecode.json'));
 
         $results = [];
         foreach ($json->test as $test) {
@@ -25,13 +26,14 @@ class Base58Test extends AbstractTestCase
 
         return $results;
     }
-    
+
     /**
      * Test that encoding and decoding a string results in the original data
      * @dataProvider getVectors
      * @param Buffer $bs
      * @param string $base58
      */
+    #[DataProvider('getVectors')]
     public function testEncodeDecode(Buffer $bs, string $base58)
     {
         $encoded = Base58::encode($bs);
@@ -60,6 +62,7 @@ class Base58Test extends AbstractTestCase
      * @param Buffer $bs
      * @param string $base58
      */
+    #[DataProvider('getVectors')]
     public function testEncodeDecodeCheck(Buffer $bs, string $base58)
     {
         $encoded = Base58::encodeCheck($bs);

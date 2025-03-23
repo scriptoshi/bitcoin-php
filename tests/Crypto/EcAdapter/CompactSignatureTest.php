@@ -13,13 +13,14 @@ use BitWasp\Bitcoin\Crypto\Random\Random;
 use BitWasp\Bitcoin\Key\Factory\PrivateKeyFactory;
 use BitWasp\Bitcoin\MessageSigner\MessageSigner;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class CompactSignatureTest extends AbstractTestCase
 {
     /**
      * @return array
      */
-    public function getCSVectors()
+    public static function getCSVectors()
     {
         // create identical test vectors for secp256k1 and phpecc
         // Note that signatures should mean the verifying party can recover the correct pubkey, so the effects of
@@ -29,11 +30,10 @@ class CompactSignatureTest extends AbstractTestCase
         $vectors = [];
 
         $random = new Random();
-        for ($i = 0; $i < 2; $i++) {
-            ;
+        for ($i = 0; $i < 2; $i++) {;
             $message = "Message $i";
 
-            foreach ($this->getEcAdapters() as $adapterRow) {
+            foreach (static::getEcAdapters() as $adapterRow) {
                 $adapter = $adapterRow[0];
                 $keyFactory = new PrivateKeyFactory($adapter);
 
@@ -53,6 +53,7 @@ class CompactSignatureTest extends AbstractTestCase
      * @param PrivateKeyInterface $private
      * @param string $message
      */
+    #[DataProvider('getCSVectors')]
     public function testCompactSignature(EcAdapterInterface $ecAdapter, PrivateKeyInterface $private, string $message)
     {
         $pubKey = $private->getPublicKey();

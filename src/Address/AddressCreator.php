@@ -51,7 +51,7 @@ class AddressCreator extends BaseAddressCreator
     protected function readSegwitAddress(string $strAddress, NetworkInterface $network)
     {
         try {
-            list ($version, $program) = Bech32::decodeSegwit($network->getSegwitBech32Prefix(), $strAddress);
+            list($version, $program) = Bech32::decodeSegwit($network->getSegwitBech32Prefix(), $strAddress);
 
             if (0 === $version) {
                 $wp = WitnessProgram::v0(new Buffer($program));
@@ -102,7 +102,7 @@ class AddressCreator extends BaseAddressCreator
      * @return Address
      * @throws UnrecognizedAddressException
      */
-    public function fromString(string $strAddress, NetworkInterface $network = null): Address
+    public function fromString(string $strAddress, ?NetworkInterface $network = null): Address
     {
         $network = $network ?: Bitcoin::getNetwork();
 

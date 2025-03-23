@@ -13,19 +13,20 @@ use BitWasp\Bitcoin\Key\Factory\PrivateKeyFactory;
 use BitWasp\Bitcoin\Key\Factory\PublicKeyFactory;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
 use BitWasp\Buffertools\Buffer;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class EcAdapterTest extends AbstractTestCase
 {
     /**
      * @return array
      */
-    public function getPrivVectors()
+    public static function getPrivVectors()
     {
         $datasets = [];
-        $data = json_decode($this->dataFile('privateKeys.json'), true);
+        $data = json_decode(static::dataFile('privateKeys.json'), true);
 
         foreach ($data['vectors'] as $vector) {
-            foreach ($this->getEcAdapters() as $adapter) {
+            foreach (static::getEcAdapters() as $adapter) {
                 $datasets[] = [
                     $adapter[0],
                     $vector['priv'],
@@ -46,6 +47,7 @@ class EcAdapterTest extends AbstractTestCase
      * @param string $compressedHex
      * @throws \Exception
      */
+    #[DataProvider('getPrivVectors')]
     public function testPrivateToPublic(EcAdapterInterface $ec, $privHex, $pubHex, $compressedHex)
     {
         $ucFactory = new PrivateKeyFactory($ec);
@@ -62,6 +64,7 @@ class EcAdapterTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testIsValidKey(EcAdapterInterface $ecAdapter)
     {
         // Keys must be < the order of the curve
@@ -93,6 +96,7 @@ class EcAdapterTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testIsValidPublicKey(EcAdapterInterface $ecAdapter)
     {
         $json = json_decode($this->dataFile('publickey.compressed.json'));
@@ -112,6 +116,7 @@ class EcAdapterTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testDeterministicSign(EcAdapterInterface $ecAdapter)
     {
         $json = json_decode($this->dataFile('hmacdrbg.json'));
@@ -141,6 +146,7 @@ class EcAdapterTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testPrivateKeySign(EcAdapterInterface $ecAdapter)
     {
         $random = new Random();

@@ -18,6 +18,7 @@ use BitWasp\Bitcoin\Transaction\Factory\TxBuilder;
 use BitWasp\Bitcoin\Transaction\Transaction;
 use BitWasp\Bitcoin\Transaction\TransactionOutput;
 use BitWasp\Buffertools\Buffer;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class TxBuilderTest extends AbstractTestCase
 {
@@ -134,7 +135,7 @@ class TxBuilderTest extends AbstractTestCase
         $this->assertEquals($timestampLocktime, $builder->lockToTimestamp($locktime, $timestamp)->getAndReset()->getLockTime());
     }
 
-    public function getAddresses()
+    public static function getAddresses()
     {
         $factory = new PrivateKeyFactory();
         $key = $factory->generateUncompressed(new Random());
@@ -150,6 +151,7 @@ class TxBuilderTest extends AbstractTestCase
      * @dataProvider getAddresses
      * @param AddressInterface $address
      */
+    #[DataProvider('getAddresses')]
     public function testPayToAddress2(AddressInterface $address)
     {
         $expectedScript = $address->getScriptPubKey();

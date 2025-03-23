@@ -7,13 +7,14 @@ namespace BitWasp\Bitcoin\Tests\Script\Interpreter;
 use BitWasp\Bitcoin\Script\Interpreter\Number;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
 use BitWasp\Buffertools\Buffer;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class NumberTest extends AbstractTestCase
 {
     /**
      * @return array
      */
-    public function getVectors()
+    public static function getVectors()
     {
         return [
             [0, 0, ''],
@@ -25,8 +26,8 @@ class NumberTest extends AbstractTestCase
             [256, 2, '0001'],
             [-256, 2, '0081'],
             [-255, 2, 'ff80'],
-            [-pow(2, 31)+1, 4, 'ffffffff'],
-            [pow(2, 31)-1, 4, 'ffffff7f'],
+            [-pow(2, 31) + 1, 4, 'ffffffff'],
+            [pow(2, 31) - 1, 4, 'ffffff7f'],
         ];
     }
 
@@ -36,6 +37,7 @@ class NumberTest extends AbstractTestCase
      * @param string $expectedHex
      * @dataProvider getVectors
      */
+    #[DataProvider('getVectors')]
     public function testInts(int $int, int $expectedSize, string $expectedHex)
     {
         $number = Number::int($int);
@@ -51,6 +53,7 @@ class NumberTest extends AbstractTestCase
      * @param string $expectedHex
      * @dataProvider getVectors
      */
+    #[DataProvider('getVectors')]
     public function testVector(int $int, int $expectedSize, string $expectedHex)
     {
         $buffer = Buffer::hex($expectedHex);

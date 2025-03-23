@@ -12,13 +12,14 @@ use BitWasp\Bitcoin\Script\ScriptInterface;
 use BitWasp\Bitcoin\Script\WitnessScript;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
 use BitWasp\Buffertools\Buffer;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class WitnessScriptTest extends AbstractTestCase
 {
     /**
      * @return array
      */
-    public function getCannotNestVectors()
+    public static function getCannotNestVectors()
     {
         return [
             [new WitnessScript(new Script(new Buffer())), "Cannot nest V0 P2WSH scripts."],
@@ -31,6 +32,7 @@ class WitnessScriptTest extends AbstractTestCase
      * @param string $exceptionMsg
      * @dataProvider getCannotNestVectors
      */
+    #[DataProvider('getCannotNestVectors')]
     public function testCannotNestWitnessScripts(ScriptInterface $testScript, string $exceptionMsg)
     {
         $this->expectException(WitnessScriptException::class);

@@ -7,10 +7,11 @@ namespace BitWasp\Bitcoin\Tests\Network;
 use BitWasp\Bitcoin\Network\NetworkFactory;
 use BitWasp\Bitcoin\Network\Networks;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class NetworkFactoryTest extends AbstractTestCase
 {
-    public function getFactoryMethodAndClass(): array
+    public static function getFactoryMethodAndClass(): array
     {
         return [
             ['bitcoin', Networks\Bitcoin::class],
@@ -32,6 +33,7 @@ class NetworkFactoryTest extends AbstractTestCase
      * @param string $expectedClass
      * @dataProvider getFactoryMethodAndClass
      */
+    #[DataProvider('getFactoryMethodAndClass')]
     public function testNetworkFactory(string $method, string $expectedClass)
     {
         $this->assertInstanceOf($expectedClass, call_user_func([NetworkFactory::class, $method]));

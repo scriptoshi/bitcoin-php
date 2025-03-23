@@ -15,13 +15,14 @@ use BitWasp\Bitcoin\Script\WitnessScript;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
 use BitWasp\Buffertools\Buffer;
 use BitWasp\Buffertools\BufferInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class P2shScriptTest extends AbstractTestCase
 {
     /**
      * @return array
      */
-    public function getCannotNestVectors()
+    public static function getCannotNestVectors()
     {
         return [
             [new P2shScript(new Script(new Buffer())), "Cannot nest P2SH scripts."],
@@ -33,6 +34,7 @@ class P2shScriptTest extends AbstractTestCase
      * @param string $exceptionMsg
      * @dataProvider getCannotNestVectors
      */
+    #[DataProvider('getCannotNestVectors')]
     public function testCannotNestWitnessScripts(ScriptInterface $testScript, string $exceptionMsg)
     {
         $this->expectException(P2shScriptException::class);
@@ -75,7 +77,7 @@ class P2shScriptTest extends AbstractTestCase
         $this->assertTrue($p2shScript->getOutputScript()->equals($expectedP2sh));
     }
 
-    public function getOutputScriptAndAddressVectors()
+    public static function getOutputScriptAndAddressVectors()
     {
         $script = ScriptFactory::sequence([Opcodes::OP_0]);
         $scriptHash = $script->getScriptHash();
@@ -93,6 +95,7 @@ class P2shScriptTest extends AbstractTestCase
      * @param BufferInterface $expectedScriptHash
      * @dataProvider getOutputScriptAndAddressVectors
      */
+    #[DataProvider('getOutputScriptAndAddressVectors')]
     public function testOutputScriptAndAddress(ScriptInterface $script, ScriptInterface $expectedP2SH, BufferInterface $expectedScriptHash)
     {
         $p2shScript = new P2shScript($script);

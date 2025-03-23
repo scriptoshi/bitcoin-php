@@ -8,13 +8,14 @@ use BitWasp\Bitcoin\Tests\Bech32\Provider\InvalidAddresses;
 use BitWasp\Bitcoin\Tests\Bech32\Provider\ValidAddresses;
 use BitWasp\Bitcoin\Tests\Bech32\Util;
 use BitWasp\Bitcoin\Tests\Bech32\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class SegwitAddressTest extends TestCase
 {
     /**
      * @return array
      */
-    public function validAddressProvider()
+    public static function validAddressProvider()
     {
         return ValidAddresses::load();
     }
@@ -26,9 +27,10 @@ class SegwitAddressTest extends TestCase
      * @param string $hexScript
      * @dataProvider validAddressProvider
      */
+    #[DataProvider('validAddressProvider')]
     public function testValidAddress($hrp, $bech32, $hexScript)
     {
-        list ($version, $program) = Bech32::decodeSegwit($hrp, $bech32);
+        list($version, $program) = Bech32::decodeSegwit($hrp, $bech32);
         $this->assertEquals($hexScript, Util::witnessProgram($version, $program));
 
         $addr = Bech32::encodeSegwit($hrp, $version, $program);
@@ -36,7 +38,7 @@ class SegwitAddressTest extends TestCase
     }
 
 
-    public function invalidAddressProvider()
+    public static function invalidAddressProvider()
     {
         return [
             ["tc1qw508d6qejxtdg4y5r3zarvary0c5xw7kg3g4ty"],
@@ -55,6 +57,7 @@ class SegwitAddressTest extends TestCase
      * @param string $bech32
      * @dataProvider invalidAddressProvider
      */
+    #[DataProvider('invalidAddressProvider')]
     public function testInvalidAddress($bech32)
     {
         try {
@@ -79,7 +82,7 @@ class SegwitAddressTest extends TestCase
     /**
      * @return array
      */
-    public function invalidAddressProvider2()
+    public static function invalidAddressProvider2()
     {
         return InvalidAddresses::load();
     }
@@ -90,6 +93,7 @@ class SegwitAddressTest extends TestCase
      * @param $exceptionMsg
      * @dataProvider invalidAddressProvider2
      */
+    #[DataProvider('invalidAddressProvider2')]
     public function testInvalidAddressReasons($prefix, $bech32, $exceptionMsg)
     {
         $this->expectException(Bech32Exception::class);

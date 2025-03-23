@@ -14,10 +14,11 @@ use BitWasp\Bitcoin\Transaction\TransactionInputInterface;
 use BitWasp\Bitcoin\Transaction\TransactionOutput;
 use BitWasp\Bitcoin\Transaction\TransactionOutputInterface;
 use BitWasp\Buffertools\Buffer;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class Bip69Test extends AbstractTestCase
 {
-    public function getVectors()
+    public static function getVectors()
     {
         $bip69 = new Bip69();
         return [
@@ -32,6 +33,7 @@ class Bip69Test extends AbstractTestCase
      * @param bool $expectedCheck
      * @param string $txHex
      */
+    #[DataProvider('getVectors')]
     public function testCheck(Bip69 $bip69, bool $expectedCheck, string $txHex)
     {
         $tx = TransactionFactory::fromHex($txHex);
@@ -46,18 +48,18 @@ class Bip69Test extends AbstractTestCase
     /**
      * @return \stdClass
      */
-    private function getBitcoinJsVectors()
+    private static function getBitcoinJsVectors()
     {
-        $file = $this->dataFile('bip69.bitcoinjs.json');
+        $file = static::dataFile('bip69.bitcoinjs.json');
         return json_decode($file);
     }
 
     /**
      * @return array
      */
-    public function getOutputVectors()
+    public static function getOutputVectors()
     {
-        $bitcoinjs = $this->getBitcoinJsVectors();
+        $bitcoinjs = static::getBitcoinJsVectors();
         $outputFixtures = $bitcoinjs->outputs;
         $outputVectors = [];
 
@@ -78,9 +80,9 @@ class Bip69Test extends AbstractTestCase
     /**
      * @return array
      */
-    public function getInputVectors()
+    public static function getInputVectors()
     {
-        $bitcoinjs = $this->getBitcoinJsVectors();
+        $bitcoinjs = static::getBitcoinJsVectors();
         $inputFixtures = $bitcoinjs->inputs;
         $inputVectors = [];
 
@@ -103,6 +105,7 @@ class Bip69Test extends AbstractTestCase
      * @param array $vexpected
      * @dataProvider getInputVectors
      */
+    #[DataProvider('getInputVectors')]
     public function testInputsSort(array $vin, array $vexpected)
     {
         $bip69 = new Bip69();
@@ -118,6 +121,7 @@ class Bip69Test extends AbstractTestCase
      * @param array $vexpected
      * @dataProvider getOutputVectors
      */
+    #[DataProvider('getOutputVectors')]
     public function testOutputsSort(array $vout, array $vexpected)
     {
         $bip69 = new Bip69();

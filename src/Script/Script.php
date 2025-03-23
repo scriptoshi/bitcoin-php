@@ -41,7 +41,7 @@ class Script extends Serializable implements ScriptInterface
      * @param BufferInterface $script
      * @param Opcodes|null $opCodes
      */
-    public function __construct(BufferInterface $script = null, Opcodes $opCodes = null)
+    public function __construct(?BufferInterface $script = null, ?Opcodes $opCodes = null)
     {
         $this->script = $script instanceof BufferInterface ? $script->getBinary() : '';
         $this->opCodes = $opCodes ?: new Opcodes();
@@ -226,7 +226,7 @@ class Script extends Serializable implements ScriptInterface
      * @param array|null $ops
      * @return bool
      */
-    public function isPushOnly(array&$ops = null): bool
+    public function isPushOnly(?array &$ops = null): bool
     {
         $decoded = $this->getScriptParser()->decode();
         $data = [];
@@ -255,7 +255,7 @@ class Script extends Serializable implements ScriptInterface
      * @param WitnessProgram|null $program
      * @return bool
      */
-    public function isWitness(& $program = null): bool
+    public function isWitness(&$program = null): bool
     {
         $buffer = $this->getBuffer();
         $size = $buffer->getSize();
@@ -286,12 +286,13 @@ class Script extends Serializable implements ScriptInterface
      * @param BufferInterface $scriptHash
      * @return bool
      */
-    public function isP2SH(& $scriptHash): bool
+    public function isP2SH(&$scriptHash): bool
     {
         $inhexform = bin2hex($this->script);
-        $inhexformarray = str_split($inhexform,2);
+        $inhexformarray = str_split($inhexform, 2);
 
-        if (strlen($this->script) === 23
+        if (
+            strlen($this->script) === 23
             && ($inhexformarray[0] == "a9") // OP_HASH160
             && ($inhexformarray[1] == "14") // 20
             && ($inhexformarray[22] == "87") // OP_EQUAL

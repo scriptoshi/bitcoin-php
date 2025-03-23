@@ -10,6 +10,7 @@ use BitWasp\Bitcoin\Crypto\EcAdapter\Impl\PhpEcc\Signature\Signature;
 use BitWasp\Bitcoin\Crypto\EcAdapter\Signature\SignatureInterface;
 use BitWasp\Bitcoin\Signature\SignatureFactory;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 /**
  * Class SignatureTest
@@ -50,6 +51,7 @@ class SignatureTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testFromHex(EcAdapterInterface $ecAdapter)
     {
 

@@ -25,6 +25,7 @@ use BitWasp\Bitcoin\Transaction\TransactionInterface;
 use BitWasp\Bitcoin\Transaction\TransactionOutput;
 use BitWasp\Bitcoin\Transaction\TransactionOutputInterface;
 use BitWasp\Buffertools\Buffer;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ComplexSignerTest extends AbstractTestCase
 {
@@ -32,54 +33,50 @@ class ComplexSignerTest extends AbstractTestCase
     /**
      * @var PrivateKeyInterface[]
      */
-    protected $privateKeys = [];
+    protected static $privateKeys = [];
 
-    public function __construct($name = null, array $data = [], $dataName = '')
-    {
-        parent::__construct($name, $data, $dataName);
-        $this->initKeyStore();
-    }
-
-    protected function initKeyStore()
+    protected static function initKeyStore()
     {
         $factory = new PrivateKeyFactory();
-        $this->privateKeys[] = $factory->fromHexCompressed("990000009900000099000000990000009900000099000000ff00000099000000");
-        $this->privateKeys[] = $factory->fromHexCompressed("98aa0000990000009900000099000000990000009900000099000ff099000000");
-        $this->privateKeys[] = $factory->fromHexCompressed("98bb000099000000990ff0009900000099000000990000009900000099000000");
-        $this->privateKeys[] = $factory->fromHexCompressed("98cc00009900000099000000990000009900ff00990000009900000099000000");
-        $this->privateKeys[] = $factory->fromHexCompressed("98cc0000990ed00099000000990920009900ff009900000099000000990000cc");
+        static::$privateKeys[] = $factory->fromHexCompressed("990000009900000099000000990000009900000099000000ff00000099000000");
+        static::$privateKeys[] = $factory->fromHexCompressed("98aa0000990000009900000099000000990000009900000099000ff099000000");
+        static::$privateKeys[] = $factory->fromHexCompressed("98bb000099000000990ff0009900000099000000990000009900000099000000");
+        static::$privateKeys[] = $factory->fromHexCompressed("98cc00009900000099000000990000009900ff00990000009900000099000000");
+        static::$privateKeys[] = $factory->fromHexCompressed("98cc0000990ed00099000000990920009900ff009900000099000000990000cc");
     }
 
     /**
      * @param int $idx
      * @return PrivateKeyInterface
      */
-    protected function getKeyFromStore(int $idx)
+    protected static function getKeyFromStore(int $idx)
     {
-        if (!array_key_exists($idx, $this->privateKeys)) {
+        if (!array_key_exists($idx, static::$privateKeys)) {
             throw new \RuntimeException("Key at {$idx} is missing");
         }
 
-        return $this->privateKeys[$idx];
+        return static::$privateKeys[$idx];
     }
 
     /**
      * NOTIF [AliceKey] CHECKSIGVERIFY ENDIF [BobKey] CHECKSIG
      * @return array
      */
-    private function conditionalBlockWithMandatoryEnding()
+    private static function conditionalBlockWithMandatoryEnding()
     {
-        $pA = $this->getKeyFromStore(0);
-        $pB = $this->getKeyFromStore(1);
+        $pA = static::getKeyFromStore(0);
+        $pB = static::getKeyFromStore(1);
 
         $pkA = $pA->getPublicKey();
         $pkB = $pB->getPublicKey();
 
         $script_1 = ScriptFactory::sequence([
             Opcodes::OP_NOTIF,
-            $pkA->getBuffer(), Opcodes::OP_CHECKSIGVERIFY,
+            $pkA->getBuffer(),
+            Opcodes::OP_CHECKSIGVERIFY,
             Opcodes::OP_ENDIF,
-            $pkB->getBuffer(), Opcodes::OP_CHECKSIG,
+            $pkB->getBuffer(),
+            Opcodes::OP_CHECKSIG,
         ]);
 
         $paths_1 = [
@@ -106,12 +103,12 @@ class ComplexSignerTest extends AbstractTestCase
      * 2-of-2 MULTISIG IF [Alice] CHECKSIG ELSE [BobKey] CHECKSIG ENDIF
      * @return array
      */
-    private function mandatoryStartWithConditionalEnding()
+    private static function mandatoryStartWithConditionalEnding()
     {
-        $pA = $this->getKeyFromStore(0);
-        $pB1 = $this->getKeyFromStore(1);
-        $pB2 = $this->getKeyFromStore(2);
-        $pC = $this->getKeyFromStore(3);
+        $pA = static::getKeyFromStore(0);
+        $pB1 = static::getKeyFromStore(1);
+        $pB2 = static::getKeyFromStore(2);
+        $pC = static::getKeyFromStore(3);
 
         $pkA = $pA->getPublicKey();
         $pkB1 = $pB1->getPublicKey();
@@ -120,11 +117,17 @@ class ComplexSignerTest extends AbstractTestCase
 
         return [
             ScriptFactory::sequence([
-                Opcodes::OP_2, $pkB1->getBuffer(), $pkB2->getBuffer(), Opcodes::OP_2, Opcodes::OP_CHECKMULTISIG,
+                Opcodes::OP_2,
+                $pkB1->getBuffer(),
+                $pkB2->getBuffer(),
+                Opcodes::OP_2,
+                Opcodes::OP_CHECKMULTISIG,
                 Opcodes::OP_IF,
-                $pkA->getBuffer(), Opcodes::OP_CHECKSIG,
+                $pkA->getBuffer(),
+                Opcodes::OP_CHECKSIG,
                 Opcodes::OP_ELSE,
-                $pkC->getBuffer(), Opcodes::OP_CHECKSIG,
+                $pkC->getBuffer(),
+                Opcodes::OP_CHECKSIG,
                 Opcodes::OP_ENDIF,
             ]),
             [
@@ -150,10 +153,10 @@ class ComplexSignerTest extends AbstractTestCase
      * IF [Alice] CHECKSIG ELSE [Bob] CHECKSIG
      * @return array
      */
-    private function similarConditionalSection()
+    private static function similarConditionalSection()
     {
-        $pB = $this->getKeyFromStore(0);
-        $pC = $this->getKeyFromStore(1);
+        $pB = static::getKeyFromStore(0);
+        $pC = static::getKeyFromStore(1);
 
         $pkB = $pB->getPublicKey();
         $pkC = $pC->getPublicKey();
@@ -161,9 +164,11 @@ class ComplexSignerTest extends AbstractTestCase
         return [
             ScriptFactory::sequence([
                 Opcodes::OP_IF,
-                $pkB->getBuffer(), Opcodes::OP_CHECKSIG,
+                $pkB->getBuffer(),
+                Opcodes::OP_CHECKSIG,
                 Opcodes::OP_ELSE,
-                $pkC->getBuffer(), Opcodes::OP_CHECKSIG,
+                $pkC->getBuffer(),
+                Opcodes::OP_CHECKSIG,
                 Opcodes::OP_ENDIF,
             ]),
             [
@@ -188,11 +193,11 @@ class ComplexSignerTest extends AbstractTestCase
      * IF 2 of 2 MULTISIG ELSE [Alice] CHECKSIG ENDIF
      * @return array
      */
-    private function differentlyTypedConditionalSection()
+    private static function differentlyTypedConditionalSection()
     {
-        $pA = $this->getKeyFromStore(0);
-        $pB1 = $this->getKeyFromStore(1);
-        $pB2 = $this->getKeyFromStore(2);
+        $pA = static::getKeyFromStore(0);
+        $pB1 = static::getKeyFromStore(1);
+        $pB2 = static::getKeyFromStore(2);
 
         $pkA = $pA->getPublicKey();
         $pkB1 = $pB1->getPublicKey();
@@ -201,9 +206,14 @@ class ComplexSignerTest extends AbstractTestCase
         return [
             ScriptFactory::sequence([
                 Opcodes::OP_IF,
-                Opcodes::OP_2, $pkB1->getBuffer(), $pkB2->getBuffer(), Opcodes::OP_2, Opcodes::OP_CHECKMULTISIG,
+                Opcodes::OP_2,
+                $pkB1->getBuffer(),
+                $pkB2->getBuffer(),
+                Opcodes::OP_2,
+                Opcodes::OP_CHECKMULTISIG,
                 Opcodes::OP_ELSE,
-                $pkA->getBuffer(), Opcodes::OP_CHECKSIG,
+                $pkA->getBuffer(),
+                Opcodes::OP_CHECKSIG,
                 Opcodes::OP_ENDIF,
             ]),
             [
@@ -227,12 +237,12 @@ class ComplexSignerTest extends AbstractTestCase
      * IF 2 of 2 MULTISIG ELSE [Alice] CHECKSIG ENDIF
      * @return array
      */
-    private function oneNestedNotif()
+    private static function oneNestedNotif()
     {
-        $pA = $this->getKeyFromStore(0);
-        $pB = $this->getKeyFromStore(1);
-        $pC = $this->getKeyFromStore(2);
-        $pD = $this->getKeyFromStore(3);
+        $pA = static::getKeyFromStore(0);
+        $pB = static::getKeyFromStore(1);
+        $pC = static::getKeyFromStore(2);
+        $pD = static::getKeyFromStore(3);
 
         $pkA = $pA->getPublicKey();
         $pkB = $pB->getPublicKey();
@@ -242,13 +252,17 @@ class ComplexSignerTest extends AbstractTestCase
         return [
             ScriptFactory::sequence([
                 Opcodes::OP_IF,
-                $pkA->getBuffer(), Opcodes::OP_CHECKSIG,
+                $pkA->getBuffer(),
+                Opcodes::OP_CHECKSIG,
                 Opcodes::OP_ELSE,
-                $pkB->getBuffer(), Opcodes::OP_CHECKSIG,
+                $pkB->getBuffer(),
+                Opcodes::OP_CHECKSIG,
                 Opcodes::OP_NOTIF,
-                $pkC->getBuffer(), Opcodes::OP_CHECKSIG,
+                $pkC->getBuffer(),
+                Opcodes::OP_CHECKSIG,
                 Opcodes::OP_ELSE,
-                $pkD->getBuffer(), Opcodes::OP_CHECKSIG,
+                $pkD->getBuffer(),
+                Opcodes::OP_CHECKSIG,
                 Opcodes::OP_ENDIF,
                 Opcodes::OP_ENDIF,
             ]),
@@ -282,15 +296,16 @@ class ComplexSignerTest extends AbstractTestCase
      * [Alice] CHECKSIG
      * @return array
      */
-    private function simpleStillWorks()
+    private static function simpleStillWorks()
     {
-        $pB = $this->getKeyFromStore(0);
+        $pB = static::getKeyFromStore(0);
 
         $pkB = $pB->getPublicKey();
 
         return [
             ScriptFactory::sequence([
-                $pkB->getBuffer(), Opcodes::OP_CHECKSIG,
+                $pkB->getBuffer(),
+                Opcodes::OP_CHECKSIG,
             ]),
             [
                 [],
@@ -307,18 +322,20 @@ class ComplexSignerTest extends AbstractTestCase
      * [Alice] CHECKSIGVERIFY [Bob] CHECKSIG
      * @return array
      */
-    private function twoMildlySimilarTemplates()
+    private static function twoMildlySimilarTemplates()
     {
-        $pA = $this->getKeyFromStore(0);
-        $pB = $this->getKeyFromStore(1);
+        $pA = static::getKeyFromStore(0);
+        $pB = static::getKeyFromStore(1);
 
         $pkA = $pA->getPublicKey();
         $pkB = $pB->getPublicKey();
 
         return [
             ScriptFactory::sequence([
-                $pkA->getBuffer(), Opcodes::OP_CHECKSIGVERIFY,
-                $pkB->getBuffer(), Opcodes::OP_CHECKSIG,
+                $pkA->getBuffer(),
+                Opcodes::OP_CHECKSIGVERIFY,
+                $pkB->getBuffer(),
+                Opcodes::OP_CHECKSIG,
             ]),
             [
                 [],
@@ -336,12 +353,12 @@ class ComplexSignerTest extends AbstractTestCase
      * 2of3 CHECKMULTISIGVERIFY [Bob] CHECKSIG
      * @return array
      */
-    private function twoRatherDifferentTemplates()
+    private static function twoRatherDifferentTemplates()
     {
-        $pA = $this->getKeyFromStore(0);
-        $pB = $this->getKeyFromStore(1);
-        $pC = $this->getKeyFromStore(2);
-        $pD = $this->getKeyFromStore(3);
+        $pA = static::getKeyFromStore(0);
+        $pB = static::getKeyFromStore(1);
+        $pC = static::getKeyFromStore(2);
+        $pD = static::getKeyFromStore(3);
 
         $pkA = $pA->getPublicKey();
         $pkB = $pB->getPublicKey();
@@ -350,8 +367,14 @@ class ComplexSignerTest extends AbstractTestCase
 
         return [
             ScriptFactory::sequence([
-                Opcodes::OP_2, $pkA->getBuffer(), $pkB->getBuffer(), $pkC->getBuffer(), Opcodes::OP_3, Opcodes::OP_CHECKMULTISIGVERIFY,
-                $pkD->getBuffer(), Opcodes::OP_CHECKSIG,
+                Opcodes::OP_2,
+                $pkA->getBuffer(),
+                $pkB->getBuffer(),
+                $pkC->getBuffer(),
+                Opcodes::OP_3,
+                Opcodes::OP_CHECKMULTISIGVERIFY,
+                $pkD->getBuffer(),
+                Opcodes::OP_CHECKSIG,
             ]),
             [
                 [],
@@ -379,12 +402,12 @@ class ComplexSignerTest extends AbstractTestCase
      * 2of3 CHECKMULTISIGVERIFY [Bob] CHECKSIG
      * @return array
      */
-    private function lotsOfTemplates()
+    private static function lotsOfTemplates()
     {
-        $pA = $this->getKeyFromStore(0);
-        $pB = $this->getKeyFromStore(1);
-        $pC = $this->getKeyFromStore(2);
-        $pD = $this->getKeyFromStore(3);
+        $pA = static::getKeyFromStore(0);
+        $pB = static::getKeyFromStore(1);
+        $pC = static::getKeyFromStore(2);
+        $pD = static::getKeyFromStore(3);
 
         $pkA = $pA->getPublicKey();
         $pkB = $pB->getPublicKey();
@@ -393,9 +416,18 @@ class ComplexSignerTest extends AbstractTestCase
 
         return [
             ScriptFactory::sequence([
-                Opcodes::OP_1, $pkA->getBuffer(), $pkB->getBuffer(), Opcodes::OP_2, Opcodes::OP_CHECKMULTISIGVERIFY,
-                $pkC->getBuffer(), Opcodes::OP_CHECKSIGVERIFY,
-                Opcodes::OP_DUP, Opcodes::OP_HASH160, $pkD->getPubKeyHash(), Opcodes::OP_EQUALVERIFY, Opcodes::OP_CHECKSIG,
+                Opcodes::OP_1,
+                $pkA->getBuffer(),
+                $pkB->getBuffer(),
+                Opcodes::OP_2,
+                Opcodes::OP_CHECKMULTISIGVERIFY,
+                $pkC->getBuffer(),
+                Opcodes::OP_CHECKSIGVERIFY,
+                Opcodes::OP_DUP,
+                Opcodes::OP_HASH160,
+                $pkD->getPubKeyHash(),
+                Opcodes::OP_EQUALVERIFY,
+                Opcodes::OP_CHECKSIG,
             ]),
             [
                 [],
@@ -419,23 +451,24 @@ class ComplexSignerTest extends AbstractTestCase
     /**
      * @return array
      */
-    public function complexScriptProvider()
+    public static function complexScriptProvider()
     {
         return [
-            $this->conditionalBlockWithMandatoryEnding(),
-            $this->mandatoryStartWithConditionalEnding(),
-            $this->similarConditionalSection(),
-            $this->differentlyTypedConditionalSection(),
-            $this->oneNestedNotif(),
-            $this->simpleStillWorks(),
-            $this->twoMildlySimilarTemplates(),
-            $this->twoRatherDifferentTemplates(),
-            $this->lotsOfTemplates(),
+            static::conditionalBlockWithMandatoryEnding(),
+            static::mandatoryStartWithConditionalEnding(),
+            static::similarConditionalSection(),
+            static::differentlyTypedConditionalSection(),
+            static::oneNestedNotif(),
+            static::simpleStillWorks(),
+            static::twoMildlySimilarTemplates(),
+            static::twoRatherDifferentTemplates(),
+            static::lotsOfTemplates(),
         ];
     }
 
-    public function complexTestProvider()
+    public static function complexTestProvider()
     {
+        static::initKeyStore();
         $addrCreator = new AddressCreator();
         $spend = (new TxBuilder())
             ->spendOutPoint(new OutPoint(new Buffer('abcd', 32), 0))
@@ -443,14 +476,14 @@ class ComplexSignerTest extends AbstractTestCase
             ->get();
 
         $fixtures = [];
-        foreach ($this->complexScriptProvider() as $fixture) {
+        foreach (static::complexScriptProvider() as $fixture) {
 
             /**
              * @var ScriptInterface $script
              * @var array $vPaths
              * @var array $vPathStepKeys
              */
-            list ($script, $vPaths, $vPathStepKeys) = $fixture;
+            list($script, $vPaths, $vPathStepKeys) = $fixture;
 
             if (count($vPaths) != count($vPathStepKeys)) {
                 throw new \RuntimeException("Invalid data provider");
@@ -477,6 +510,7 @@ class ComplexSignerTest extends AbstractTestCase
      * @param array $branchKeyList
      * @dataProvider complexTestProvider
      */
+    #[DataProvider('complexTestProvider')]
     public function testCase(TransactionInterface $unsigned, TransactionOutputInterface $txOut, array $branch, array $branchKeyList)
     {
         $signer = new Signer($unsigned);

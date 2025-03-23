@@ -10,6 +10,7 @@ use BitWasp\Bitcoin\Crypto\EcAdapter\Serializer\Signature\CompactSignatureSerial
 use BitWasp\Bitcoin\Crypto\EcAdapter\Signature\CompactSignatureInterface;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
 use BitWasp\Buffertools\Buffer;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class CompactSignatureSerializerTest extends AbstractTestCase
 {
@@ -17,6 +18,7 @@ class CompactSignatureSerializerTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testFromParserFailure(EcAdapterInterface $ecAdapter)
     {
         /** @var CompactSignatureSerializerInterface $serializer */
@@ -29,6 +31,7 @@ class CompactSignatureSerializerTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testValidRecovery(EcAdapterInterface $ecAdapter)
     {
         $r = str_pad('', 64, '4');

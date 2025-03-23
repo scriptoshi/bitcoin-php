@@ -16,6 +16,7 @@ use BitWasp\Bitcoin\Transaction\Factory\TxBuilder;
 use BitWasp\Bitcoin\Transaction\TransactionInterface;
 use BitWasp\Bitcoin\Transaction\TransactionOutput;
 use BitWasp\Buffertools\Buffer;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class InputSignerTest extends AbstractTestCase
 {
@@ -23,7 +24,7 @@ class InputSignerTest extends AbstractTestCase
      * @param array $signDataArr
      * @return SignData
      */
-    private function decodeSignData(array $signDataArr)
+    private static function decodeSignData(array $signDataArr)
     {
         $signData = new SignData();
         if (isset($signDataArr['redeemScript'])) {
@@ -42,7 +43,7 @@ class InputSignerTest extends AbstractTestCase
      * @param array $txOutArr
      * @return TransactionOutput
      */
-    private function decodeTxOut(array $txOutArr)
+    private static function decodeTxOut(array $txOutArr)
     {
         return new TransactionOutput((int) $txOutArr['value'], ScriptFactory::fromHex($txOutArr['script']));
     }
@@ -50,9 +51,9 @@ class InputSignerTest extends AbstractTestCase
     /**
      * @return array
      */
-    public function getVectors()
+    public static function getVectors()
     {
-        $fixtures = json_decode($this->dataFile('signer_fixtures.json'), true)['invalid_solve'];
+        $fixtures = json_decode(static::dataFile('signer_fixtures.json'), true)['invalid_solve'];
         $vectors = [];
         $ec = Bitcoin::getEcAdapter();
         foreach ($fixtures as $fixture) {
@@ -70,7 +71,7 @@ class InputSignerTest extends AbstractTestCase
 
             $description = isset($fixture['description']) ? $fixture['description'] : '';
             $tx = $txb->get();
-            $vectors[] = [$description, $ec, $tx, $this->decodeTxOut($fixture['txOut']), $this->decodeSignData($fixture['signData']), $fixture['exception']['type'], $fixture['exception']['message']];
+            $vectors[] = [$description, $ec, $tx, static::decodeTxOut($fixture['txOut']), static::decodeSignData($fixture['signData']), $fixture['exception']['type'], $fixture['exception']['message']];
         }
 
         return $vectors;
@@ -85,6 +86,7 @@ class InputSignerTest extends AbstractTestCase
      * @param string $exceptionMsg
      * @dataProvider getVectors
      */
+    #[DataProvider('getVectors')]
     public function testInvalidSolveSignData($description, EcAdapterInterface $ecAdapter, TransactionInterface $tx, TransactionOutput $txOut, SignData $signData, $exception, $exceptionMsg)
     {
         $checker = new Checker($ecAdapter, $tx, 0, $txOut->getValue());

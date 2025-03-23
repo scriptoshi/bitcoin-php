@@ -37,19 +37,19 @@ interface ScriptInterface extends SerializableInterface
      * @param array $ops
      * @return bool
      */
-    public function isPushOnly(array &$ops = null): bool;
+    public function isPushOnly(?array &$ops = null): bool;
 
     /**
      * @param WitnessProgram|null $witness
      * @return bool
      */
-    public function isWitness(& $witness): bool;
+    public function isWitness(&$witness): bool;
 
     /**
      * @param BufferInterface $scriptHash
      * @return bool
      */
-    public function isP2SH(& $scriptHash): bool;
+    public function isP2SH(&$scriptHash): bool;
 
     /**
      * @param bool $accurate

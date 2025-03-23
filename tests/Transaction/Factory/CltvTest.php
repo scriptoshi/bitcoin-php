@@ -19,6 +19,7 @@ use BitWasp\Bitcoin\Transaction\Factory\Signer;
 use BitWasp\Bitcoin\Transaction\Factory\TxBuilder;
 use BitWasp\Bitcoin\Transaction\TransactionInterface;
 use BitWasp\Bitcoin\Transaction\TransactionOutput;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class CltvTest extends AbstractTestCase
 {
@@ -27,7 +28,7 @@ class CltvTest extends AbstractTestCase
      * @param int $sequence
      * @return TransactionInterface
      */
-    public function txFixture(int $locktime, int $sequence)
+    public static function txFixture(int $locktime, int $sequence)
     {
         $addrCreator = new AddressCreator();
         return (new TxBuilder())
@@ -41,32 +42,56 @@ class CltvTest extends AbstractTestCase
     /**
      * @return array
      */
-    public function getCltvCases()
+    public static function getCltvCases()
     {
         return [
             [
-                491111, $this->txFixture(491111, 0), null, null,
+                491111,
+                static::txFixture(491111, 0),
+                null,
+                null,
             ],
             [
-                491111, $this->txFixture(491112, 0), null, null,
+                491111,
+                static::txFixture(491112, 0),
+                null,
+                null,
             ],
             [
-                491111, $this->txFixture(491111, 0xffffffff - 1), null, null,
+                491111,
+                static::txFixture(491111, 0xffffffff - 1),
+                null,
+                null,
             ],
             [
-                491111, $this->txFixture(491110, 0), \RuntimeException::class, "Output is not yet spendable, must wait until block 491111",
+                491111,
+                static::txFixture(491110, 0),
+                \RuntimeException::class,
+                "Output is not yet spendable, must wait until block 491111",
             ],
             [
-                491111, $this->txFixture(491111, 0xffffffff), \RuntimeException::class, "Input sequence is set to max, therefore CHECKLOCKTIMEVERIFY would fail",
+                491111,
+                static::txFixture(491111, 0xffffffff),
+                \RuntimeException::class,
+                "Input sequence is set to max, therefore CHECKLOCKTIMEVERIFY would fail",
             ],
             [
-                491111, $this->txFixture(491110, 0xffffffff), \RuntimeException::class, "Input sequence is set to max, therefore CHECKLOCKTIMEVERIFY would fail",
+                491111,
+                static::txFixture(491110, 0xffffffff),
+                \RuntimeException::class,
+                "Input sequence is set to max, therefore CHECKLOCKTIMEVERIFY would fail",
             ],
             [
-                491111, $this->txFixture(time(), 0), \RuntimeException::class, "CLTV was for block height, but tx locktime was in timestamp range",
+                491111,
+                static::txFixture(time(), 0),
+                \RuntimeException::class,
+                "CLTV was for block height, but tx locktime was in timestamp range",
             ],
             [
-                time(), $this->txFixture(491111, 0), \RuntimeException::class, "CLTV was for timestamp, but tx locktime was in block range",
+                time(),
+                static::txFixture(491111, 0),
+                \RuntimeException::class,
+                "CLTV was for timestamp, but tx locktime was in block range",
             ],
         ];
     }
@@ -78,6 +103,7 @@ class CltvTest extends AbstractTestCase
      * @param null|string $exceptionMsg
      * @dataProvider getCltvCases
      */
+    #[DataProvider('getCltvCases')]
     public function testCltv(int $locktime, TransactionInterface $unsigned, $exception = null, $exceptionMsg = null)
     {
         /** @var PrivateKeyInterface[] $keys */
@@ -85,8 +111,11 @@ class CltvTest extends AbstractTestCase
         $key = $factory->fromHexCompressed("4200000042000000420000004200000042000000420000004200000042000000");
 
         $s = ScriptFactory::sequence([
-            Number::int($locktime)->getBuffer(), Opcodes::OP_CHECKLOCKTIMEVERIFY, Opcodes::OP_DROP,
-            $key->getPublicKey()->getBuffer(), Opcodes::OP_CHECKSIG,
+            Number::int($locktime)->getBuffer(),
+            Opcodes::OP_CHECKLOCKTIMEVERIFY,
+            Opcodes::OP_DROP,
+            $key->getPublicKey()->getBuffer(),
+            Opcodes::OP_CHECKSIG,
         ]);
 
         $ws = new WitnessScript($s);
@@ -100,12 +129,10 @@ class CltvTest extends AbstractTestCase
         $signData = (new SignData())
             ->p2sh($rs)
             ->p2wsh($ws)
-            ->signaturePolicy($flags)
-        ;
+            ->signaturePolicy($flags);
 
         $signer = (new Signer($unsigned))
-            ->allowComplexScripts(true)
-        ;
+            ->allowComplexScripts(true);
 
         if (null !== $exception) {
             $this->expectException($exception);
@@ -114,8 +141,7 @@ class CltvTest extends AbstractTestCase
 
         $input = $signer
             ->input(0, $txOut, $signData)
-            ->signStep(1, $key)
-        ;
+            ->signStep(1, $key);
 
         if ($exception) {
             $this->fail("expected failure before verification can commence");

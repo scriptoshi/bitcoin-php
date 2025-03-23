@@ -9,6 +9,7 @@ use BitWasp\Bitcoin\Network\NetworkFactory;
 use BitWasp\Bitcoin\Serializer\Key\HierarchicalKey\ExtendedKeySerializer;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
 use BitWasp\Buffertools\Buffer;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ExtendedKeySerializerTest extends AbstractTestCase
 {
@@ -16,6 +17,7 @@ class ExtendedKeySerializerTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $adapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testInvalidKey(EcAdapterInterface $adapter)
     {
         $this->expectException(\BitWasp\Buffertools\Exceptions\ParserOutOfRange::class);

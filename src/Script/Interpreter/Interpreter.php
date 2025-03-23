@@ -45,16 +45,27 @@ class Interpreter implements InterpreterInterface
      * @var array
      */
     private $disabledOps = [
-        Opcodes::OP_CAT,    Opcodes::OP_SUBSTR, Opcodes::OP_LEFT,  Opcodes::OP_RIGHT,
-        Opcodes::OP_INVERT, Opcodes::OP_AND,    Opcodes::OP_OR,    Opcodes::OP_XOR,
-        Opcodes::OP_2MUL,   Opcodes::OP_2DIV,   Opcodes::OP_MUL,   Opcodes::OP_DIV,
-        Opcodes::OP_MOD,    Opcodes::OP_LSHIFT, Opcodes::OP_RSHIFT
+        Opcodes::OP_CAT,
+        Opcodes::OP_SUBSTR,
+        Opcodes::OP_LEFT,
+        Opcodes::OP_RIGHT,
+        Opcodes::OP_INVERT,
+        Opcodes::OP_AND,
+        Opcodes::OP_OR,
+        Opcodes::OP_XOR,
+        Opcodes::OP_2MUL,
+        Opcodes::OP_2DIV,
+        Opcodes::OP_MUL,
+        Opcodes::OP_DIV,
+        Opcodes::OP_MOD,
+        Opcodes::OP_LSHIFT,
+        Opcodes::OP_RSHIFT
     ];
 
     /**
      * @param EcAdapterInterface $ecAdapter
      */
-    public function __construct(EcAdapterInterface $ecAdapter = null)
+    public function __construct(?EcAdapterInterface $ecAdapter = null)
     {
         $ecAdapter = $ecAdapter ?: Bitcoin::getEcAdapter();
         $this->math = $ecAdapter->getMath();
@@ -216,7 +227,7 @@ class Interpreter implements InterpreterInterface
      * @param ScriptWitnessInterface|null $witness
      * @return bool
      */
-    public function verify(ScriptInterface $scriptSig, ScriptInterface $scriptPubKey, int $flags, CheckerBase $checker, ScriptWitnessInterface $witness = null): bool
+    public function verify(ScriptInterface $scriptSig, ScriptInterface $scriptPubKey, int $flags, CheckerBase $checker, ?ScriptWitnessInterface $witness = null): bool
     {
         static $emptyWitness = null;
         if ($emptyWitness === null) {
@@ -627,7 +638,7 @@ class Interpreter implements InterpreterInterface
                                 throw new \RuntimeException('Invalid stack operation OP_TUCK');
                             }
                             $vch = $mainStack[-1];
-                            $mainStack->add(- 2, $vch);
+                            $mainStack->add(-2, $vch);
                             break;
 
                         case Opcodes::OP_PICK:
@@ -737,7 +748,7 @@ class Interpreter implements InterpreterInterface
 
                             break;
 
-                        // Arithmetic operations
+                            // Arithmetic operations
                         case $opCode >= Opcodes::OP_1ADD && $opCode <= Opcodes::OP_0NOTEQUAL:
                             if ($mainStack->isEmpty()) {
                                 throw new \Exception('Invalid stack operation 1ADD-OP_0NOTEQUAL');
@@ -837,7 +848,7 @@ class Interpreter implements InterpreterInterface
                             $mainStack->push($value ? $this->vchTrue : $this->vchFalse);
                             break;
 
-                        // Hash operation
+                            // Hash operation
                         case Opcodes::OP_RIPEMD160:
                         case Opcodes::OP_SHA1:
                         case Opcodes::OP_SHA256:

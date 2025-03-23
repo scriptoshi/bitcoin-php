@@ -13,6 +13,7 @@ use BitWasp\Bitcoin\Math\Math;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
 use BitWasp\Buffertools\Buffer;
 use Mdanter\Ecc\EccFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class DerSignatureSerializerTest extends AbstractTestCase
 {
@@ -20,6 +21,7 @@ class DerSignatureSerializerTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $adapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testFromParserFailure(EcAdapterInterface $adapter)
     {
         /** @var DerSignatureSerializerInterface $serializer */

@@ -17,17 +17,18 @@ use BitWasp\Bitcoin\Script\ScriptInterface;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
 use BitWasp\Bitcoin\Transaction\Transaction;
 use BitWasp\Buffertools\Buffer;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class InterpreterTest extends AbstractTestCase
 {
 
-    public function getScripts()
+    public  static function getScripts()
     {
         $flags = Interpreter::VERIFY_NONE;
         $vectors[] = [
             $flags,
             new Script(new Buffer()),
-            ScriptFactory::create()->push(Buffer::hex($this->dataFile("10010bytes.hex")))->getScript(),
+            ScriptFactory::create()->push(Buffer::hex(static::dataFile("10010bytes.hex")))->getScript(),
             false
         ];
 
@@ -42,6 +43,7 @@ class InterpreterTest extends AbstractTestCase
      * @param bool $result
      * @dataProvider getScripts
      */
+    #[DataProvider('getScripts')]
     public function testScript(int $flags, ScriptInterface $scriptSig, ScriptInterface $scriptPubKey, bool $result)
     {
         $ec = Bitcoin::getEcAdapter();
@@ -160,12 +162,12 @@ class InterpreterTest extends AbstractTestCase
 
         $i = new Interpreter(Bitcoin::getEcAdapter());
         foreach ($valid as $t) {
-            list ($opcode, $buffer) = $t;
+            list($opcode, $buffer) = $t;
             $this->assertTrue($i->checkMinimalPush($opcode, $buffer));
         }
 
         foreach ($invalid as $t) {
-            list ($opcode, $buffer) = $t;
+            list($opcode, $buffer) = $t;
             $this->assertFalse($i->checkMinimalPush($opcode, $buffer));
         }
     }

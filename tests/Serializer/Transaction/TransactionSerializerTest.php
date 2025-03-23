@@ -9,12 +9,13 @@ use BitWasp\Bitcoin\Tests\AbstractTestCase;
 use BitWasp\Bitcoin\Transaction\TransactionFactory;
 use BitWasp\Buffertools\Buffer;
 use BitWasp\Buffertools\Exceptions\ParserOutOfRange;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class TransactionSerializerTest extends AbstractTestCase
 {
-    public function getTransactionSerializationFixtures()
+    public static function getTransactionSerializationFixtures()
     {
-        $fixtures = json_decode($this->dataFile('signer_fixtures.json'), true);
+        $fixtures = json_decode(static::dataFile('signer_fixtures.json'), true);
         if (!$fixtures) {
             throw new \RuntimeException("bad tx serialization fixtures");
         }
@@ -23,7 +24,7 @@ class TransactionSerializerTest extends AbstractTestCase
             if (array_key_exists('hex', $vector) && $vector['hex'] !== '') {
                 $vectors[] = [TransactionSerializer::NO_WITNESS, $vector['hex']];
             }
-            if (array_key_exists('whex', $vector)&& $vector['whex'] !== '') {
+            if (array_key_exists('whex', $vector) && $vector['whex'] !== '') {
                 $vectors[] = [0, $vector['whex']];
             }
         }
@@ -35,11 +36,12 @@ class TransactionSerializerTest extends AbstractTestCase
      * @param string $tx
      * @dataProvider getTransactionSerializationFixtures
      */
+    #[DataProvider('getTransactionSerializationFixtures')]
     public function testTransactionSerializer(int $flags, string $tx)
     {
         $serializer = new TransactionSerializer();
         $parsed = $serializer->parse(Buffer::hex($tx));
-    
+
         $serialized = $serializer->serialize($parsed);
         $this->assertEquals($tx, $serialized->getHex());
     }
@@ -49,7 +51,7 @@ class TransactionSerializerTest extends AbstractTestCase
         $hex = $this->dataFile("biginputtx.valid.txt");
         $tx = TransactionFactory::fromHex($hex);
         $this->assertEquals(300, count($tx->getInputs()));
-        
+
         $serialized = $tx->getHex();
         $this->assertEquals($hex, $serialized);
     }

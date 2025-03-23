@@ -11,10 +11,11 @@ use BitWasp\Bitcoin\Key\KeyToScript\Factory\P2pkScriptDataFactory;
 use BitWasp\Bitcoin\Key\KeyToScript\Factory\P2wpkhScriptDataFactory;
 use BitWasp\Bitcoin\Script\ScriptType;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class P2shScriptDecoratorTest extends AbstractTestCase
 {
-    public function getAllowedScriptFactories()
+    public static function getAllowedScriptFactories()
     {
         return [
             [new P2pkhScriptDataFactory()],
@@ -28,6 +29,7 @@ class P2shScriptDecoratorTest extends AbstractTestCase
      * @param KeyToScriptDataFactory $factory
      * @throws \BitWasp\Bitcoin\Exceptions\DisallowedScriptDataFactoryException
      */
+    #[DataProvider('getAllowedScriptFactories')]
     public function testAllowedScriptType(KeyToScriptDataFactory $factory)
     {
         $p2shFactory = new P2shScriptDecorator($factory);

@@ -11,10 +11,11 @@ use BitWasp\Bitcoin\Script\Script;
 use BitWasp\Bitcoin\Script\ScriptFactory;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
 use BitWasp\Buffertools\Buffer;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ScriptCountSigOpsTest extends AbstractTestCase
 {
-    public function getCountTestVectors()
+    public static function getCountTestVectors()
     {
         $s1 = ScriptFactory::create()->opcode(Opcodes::OP_1)->push(new Buffer())->push(new Buffer())->opcode(Opcodes::OP_2, Opcodes::OP_CHECKMULTISIG)->getScript();
         $s2 = ScriptFactory::create($s1->getBuffer())->opcode(Opcodes::OP_IF, Opcodes::OP_CHECKSIG, Opcodes::OP_ENDIF)->getScript();
@@ -97,6 +98,7 @@ class ScriptCountSigOpsTest extends AbstractTestCase
      * @param int $eSigOpCount
      * @dataProvider getCountTestVectors
      */
+    #[DataProvider('getCountTestVectors')]
     public function testSigOpCount(Script $script, bool $fAccurate, int $eSigOpCount)
     {
         $this->assertEquals($eSigOpCount, $script->countSigOps($fAccurate));

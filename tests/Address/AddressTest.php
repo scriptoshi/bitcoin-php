@@ -21,10 +21,11 @@ use BitWasp\Bitcoin\Script\WitnessProgram;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
 use BitWasp\Buffertools\Buffer;
 use BitWasp\Bitcoin\Address\AddressCreator;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class AddressTest extends AbstractTestCase
 {
-    public function getNetwork(string $network)
+    public static function getNetwork(string $network)
     {
         switch ($network) {
             case 'btc':
@@ -41,15 +42,15 @@ class AddressTest extends AbstractTestCase
     /**
      * @return array
      */
-    public function getVectors()
+    public static function getVectors()
     {
         $datasets = [];
 
-        $data = json_decode($this->dataFile('addresstests.json'), true);
+        $data = json_decode(static::dataFile('addresstests.json'), true);
         foreach ($data['scriptHash'] as $vector) {
             $datasets[] = [
                 'script',
-                $this->getNetwork($vector['network']),
+                static::getNetwork($vector['network']),
                 $vector['script'],
                 $vector['address'],
                 $vector['hash'],
@@ -59,7 +60,7 @@ class AddressTest extends AbstractTestCase
         foreach ($data['pubKeyHash'] as $vector) {
             $datasets[] = [
                 'pubkeyhash',
-                $this->getNetwork($vector['network']),
+                static::getNetwork($vector['network']),
                 $vector['publickey'],
                 $vector['address'],
                 $vector['hash'],
@@ -68,7 +69,7 @@ class AddressTest extends AbstractTestCase
         foreach ($data['witness'] as $vector) {
             $datasets[] = [
                 'witness',
-                $this->getNetwork($vector['network']),
+                static::getNetwork($vector['network']),
                 $vector['program'],
                 strtolower($vector['address']),
                 null,
@@ -79,13 +80,13 @@ class AddressTest extends AbstractTestCase
     }
 
     /**
-     * @dataProvider getVectors
      * @param string $type
      * @param NetworkInterface $network
      * @param string $data
      * @param string $address
      * @throws \Exception
      */
+    #[DataProvider('getVectors')]
     public function testAddress(string $type, NetworkInterface $network, string $data, string $address)
     {
         if ($type === 'pubkeyhash') {
@@ -103,7 +104,7 @@ class AddressTest extends AbstractTestCase
             $obj = new ScriptHashAddress($redeemScript->getScriptHash());
             $this->assertInstanceOf(ScriptHashAddress::class, $obj);
 
-            $scriptHash = $redeemScript->getScriptHash() ;
+            $scriptHash = $redeemScript->getScriptHash();
             $this->assertTrue($scriptHash->equals($obj->getHash()));
             $script = ScriptFactory::scriptPubKey()->payToScriptHash($obj->getHash());
         } else if ($type === 'witness') {

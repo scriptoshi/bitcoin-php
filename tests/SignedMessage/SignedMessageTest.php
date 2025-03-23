@@ -15,6 +15,7 @@ use BitWasp\Bitcoin\Network\NetworkFactory;
 use BitWasp\Bitcoin\Serializer\MessageSigner\SignedMessageSerializer;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
 use BitWasp\Buffertools\Buffer;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class SignedMessageTest extends AbstractTestCase
 {
@@ -37,9 +38,10 @@ IBpGR29vEbbl4kmpK0fcDsT75GPeH2dg5O199D3iIkS3VcDoQahJMGJEDozXot8JGULWjN9Llq79aF+F
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testParsesMessage(EcAdapterInterface $ecAdapter)
     {
-        list ($message, $addressString, $content, $network) = $this->sampleMessage();
+        list($message, $addressString, $content, $network) = $this->sampleMessage();
 
         $addrCreator = new AddressCreator();
         /** @var PayToPubKeyHashAddress $address */
@@ -64,6 +66,7 @@ IBpGR29vEbbl4kmpK0fcDsT75GPeH2dg5O199D3iIkS3VcDoQahJMGJEDozXot8JGULWjN9Llq79aF+F
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testInvalidMessage1(EcAdapterInterface $ecAdapter)
     {
         $invalid = '-----BEGIN SIGNED MESSAGE-----
@@ -86,6 +89,7 @@ IBpGR29vEbbl4kmpK0fcDsT75GPeH2dg5O199D3iIkS3VcDoQahJMGJEDozXot8JGULWjN9Llq79aF+F
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testInvalidMessage2(EcAdapterInterface $ecAdapter)
     {
         $invalid = '-----BEGIN BITCOIN SIGNED MESSAGE-----
@@ -108,6 +112,7 @@ IBpGR29vEbbl4kmpK0fcDsT75GPeH2dg5O199D3iIkS3VcDoQahJMGJEDozXot8JGULWjN9Llq79aF+F
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testInvalidMessage3(EcAdapterInterface $ecAdapter)
     {
         $invalid = '-----BEGIN BITCOIN SIGNED MESSAGE-----

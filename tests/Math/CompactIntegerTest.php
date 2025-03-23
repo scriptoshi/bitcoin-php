@@ -6,10 +6,11 @@ namespace BitWasp\Bitcoin\Tests\Math;
 
 use BitWasp\Bitcoin\Math\Math;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class CompactIntegerTest extends AbstractTestCase
 {
-    public function getTestVectors()
+    public static function getTestVectors()
     {
         $math = new Math;
 
@@ -151,6 +152,7 @@ class CompactIntegerTest extends AbstractTestCase
      * @param bool $eOverflow
      * @dataProvider getTestVectors
      */
+    #[DataProvider('getTestVectors')]
     public function testCases(Math $math, \GMP $int, \GMP $eInt, bool $eNegative, bool $eOverflow)
     {
         $negative = false;

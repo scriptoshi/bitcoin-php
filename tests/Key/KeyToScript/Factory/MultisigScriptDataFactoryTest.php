@@ -15,6 +15,7 @@ use BitWasp\Bitcoin\Key\Factory\PublicKeyFactory;
 use BitWasp\Bitcoin\Key\KeyToScript\ScriptAndSignData;
 use BitWasp\Bitcoin\Script\ScriptType;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class MultisigScriptDataFactoryTest extends AbstractTestCase
 {
@@ -31,6 +32,7 @@ class MultisigScriptDataFactoryTest extends AbstractTestCase
      * @param EcAdapterInterface $ecAdapter
      * @throws \Exception
      */
+    #[DataProvider('getEcAdapters')]
     public function testTwoOfTwoWithSorting(EcAdapterInterface $ecAdapter)
     {
         $sort = true;
@@ -58,6 +60,7 @@ class MultisigScriptDataFactoryTest extends AbstractTestCase
      * @param EcAdapterInterface $ecAdapter
      * @throws \Exception
      */
+    #[DataProvider('getEcAdapters')]
     public function testTwoOfTwoWithoutSorting(EcAdapterInterface $ecAdapter)
     {
         $sort = false;
@@ -85,6 +88,7 @@ class MultisigScriptDataFactoryTest extends AbstractTestCase
      * @param EcAdapterInterface $ecAdapter
      * @throws \Exception
      */
+    #[DataProvider('getEcAdapters')]
     public function testTwoOfFiveWithoutSorting(EcAdapterInterface $ecAdapter)
     {
         $sort = false;
@@ -116,6 +120,7 @@ class MultisigScriptDataFactoryTest extends AbstractTestCase
      * @param EcAdapterInterface $ecAdapter
      * @throws \Exception
      */
+    #[DataProvider('getEcAdapters')]
     public function testChecksNumberOfKeys(EcAdapterInterface $ecAdapter)
     {
         $pubKeyFactory = new PublicKeyFactory($ecAdapter);
@@ -162,6 +167,7 @@ class MultisigScriptDataFactoryTest extends AbstractTestCase
      * @param EcAdapterInterface $ecAdapter
      * @throws \Exception
      */
+    #[DataProvider('getEcAdapters')]
     public function testP2shMultisigWithSorting(EcAdapterInterface $ecAdapter)
     {
         $sort = true;
@@ -196,6 +202,7 @@ class MultisigScriptDataFactoryTest extends AbstractTestCase
      * @param EcAdapterInterface $ecAdapter
      * @throws \Exception
      */
+    #[DataProvider('getEcAdapters')]
     public function testP2wshMultisigWithSorting(EcAdapterInterface $ecAdapter)
     {
         $sort = true;
@@ -229,6 +236,7 @@ class MultisigScriptDataFactoryTest extends AbstractTestCase
      * @param EcAdapterInterface $ecAdapter
      * @throws \Exception
      */
+    #[DataProvider('getEcAdapters')]
     public function testP2shP2wshMultisigWithSorting(EcAdapterInterface $ecAdapter)
     {
         $sort = true;

@@ -10,6 +10,7 @@ use BitWasp\Bitcoin\Exceptions\Base58ChecksumFailure;
 use BitWasp\Bitcoin\Key\Factory\PrivateKeyFactory;
 use BitWasp\Bitcoin\Network\NetworkFactory;
 use BitWasp\Bitcoin\Tests\AbstractTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class PrivateKeyTest extends AbstractTestCase
 {
@@ -17,6 +18,7 @@ class PrivateKeyTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testCreatePrivateKey(EcAdapterInterface $ecAdapter)
     {
         $hex = '4141414141414141414141414141414141414141414141414141414141414141';
@@ -37,6 +39,7 @@ class PrivateKeyTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testCreatePrivateKeyCompressed(EcAdapterInterface $ecAdapter)
     {
         $hex = '4141414141414141414141414141414141414141414141414141414141414141';
@@ -57,6 +60,7 @@ class PrivateKeyTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testCreatePrivateKeyFailure(EcAdapterInterface $ecAdapter)
     {
         $hex = 'FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141';
@@ -69,6 +73,7 @@ class PrivateKeyTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testGenerateNewUncompressed(EcAdapterInterface $ecAdapter)
     {
         $factory = new PrivateKeyFactory($ecAdapter);
@@ -81,6 +86,7 @@ class PrivateKeyTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testIsCompressed(EcAdapterInterface $ecAdapter)
     {
         $random = new Random();
@@ -96,6 +102,7 @@ class PrivateKeyTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testGenerateNewCompressed(EcAdapterInterface $ecAdapter)
     {
         $factory = new PrivateKeyFactory($ecAdapter);
@@ -108,6 +115,7 @@ class PrivateKeyTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testGetWif(EcAdapterInterface $ecAdapter)
     {
         $network = NetworkFactory::bitcoin();
@@ -126,6 +134,7 @@ class PrivateKeyTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testGetPubKeyHash(EcAdapterInterface $ecAdapter)
     {
         $keyFactory = new PrivateKeyFactory($ecAdapter);
@@ -141,6 +150,7 @@ class PrivateKeyTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testSerialize(EcAdapterInterface $ecAdapter)
     {
         $keyFactory = new PrivateKeyFactory($ecAdapter);
@@ -152,6 +162,7 @@ class PrivateKeyTest extends AbstractTestCase
      * @dataProvider getEcAdapters
      * @param EcAdapterInterface $ecAdapter
      */
+    #[DataProvider('getEcAdapters')]
     public function testFromWif(EcAdapterInterface $ecAdapter)
     {
         $math = $ecAdapter->getMath();
@@ -184,6 +195,7 @@ class PrivateKeyTest extends AbstractTestCase
     /**
      * @dataProvider getEcAdapters
      */
+    #[DataProvider('getEcAdapters')]
     public function testInvalidWif(EcAdapterInterface $ecAdapter)
     {
         $factory = new PrivateKeyFactory($ecAdapter);
